@@ -1,59 +1,68 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../auth/login.php");
-    exit();
-}
-?>
+include("../config/db.php");
 
+// Only admin allowed
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    die("Access denied. Admins only.");
+}
+
+// Fetch all orders with user info
+$sql = "SELECT orders.*, users.name AS user_name 
+        FROM orders 
+        JOIN users ON orders.user_id = users.id 
+        ORDER BY orders.created_at DESC";
+
+$result = mysqli_query($conn, $sql);
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="/jewellery_store/assets/style.css">
+    <title>Manage Orders</title>
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body style="margin:0;min-height:100vh; display:flex; flex-direction:column;">
 <div style="flex:1;">
-<div class="admin-container">
-    <h1>Admin Dashboard</h1>
-    <p class="admin-subtitle">Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
+ <h2 class="admin-title">All Orders (Admin)</h2>
 
-    <div class="admin-grid">
+ <div class="admin-table-container">
+  <table class="admin-table">
+    <tr>
+        <th>Order ID</th>
+        <th>User</th>
+        <th>Total</th>
+        <th>Status</th>
+        <th>Date</th>
+        <th>Action</th>
+    </tr>
 
-        <a href="add_product.php" class="admin-card">
-            <h3>➕ Add Product</h3>
-            <p>Add new jewellery items</p>
-        </a>
-
-        <a href="manage_products.php" class="admin-card">
-            <h3>📦 Manage Products</h3>
-            <p>Edit or delete products</p>
-        </a>
-
-        <a href="orders.php" class="admin-card">
-            <h3>🧾 Manage Orders</h3>
-            <p>View and update orders</p>
-        </a>
-
-        <a href="../index.php" class="admin-card admin-center">
-            <h3>🌐 Go to Website</h3>
-            <p>TARA</p>
-        </a>
-
-        <a href="logout.php" class="admin-card admin-center logout-card">
-            <h3>🚪 Logout</h3>
-            <p>Sign out of your account</p>
-        </a>
-        <a href="add_admin.php" class="admin-card">
-           <h3>➕Add New Admin</h3>
-           <p>Create another admin account</p>
-        </a>
-
-
-
-    </div>
+    <?php while ($order = mysqli_fetch_assoc($result)): ?>
+    <tr>
+        <td>#<?php echo $order['id']; ?></td>
+        <td><?php echo htmlspecialchars($order['user_name']); ?></td>
+        <td>€<?php echo $order['total']; ?></td>
+        <td>
+            <span class="status <?php echo htmlspecialchars($order['status']); ?>">
+                <?php echo htmlspecialchars($order['status']); ?>
+            </span>
+        </td>
+        <td><?php echo $order['created_at']; ?></td>
+        <td>
+            <a class="admin-link" href="order_details.php?id=<?php echo $order['id']; ?>">
+                View
+            </a>
+        </td>
+    </tr>
+    <?php endwhile; ?>
+  </table>
  </div>
-</div>
+
+ <div class="admin-back">
+    <a class="admin-link" href="index.php">⬅ Back to Admin Dashboard</a>
+ </div>
+    </div>
+
+
 <!-- FOOTER -->
 <footer class="site-footer" style="margin-top:auto;">
     <div class="footer-container">
@@ -112,7 +121,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         <p>© <?php echo date("Y"); ?> 𝕋𝔸ℝ𝔸 𝕁𝔼𝕎𝔼𝕃𝕃𝔼ℝ𝕊. All rights reserved.</p>
     </div>
 </footer>
-
 
 </body>
 </html>

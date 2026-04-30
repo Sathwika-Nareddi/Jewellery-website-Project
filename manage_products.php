@@ -1,61 +1,66 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../auth/login.php");
-    exit();
-}
-?>
+include("../config/db.php");
 
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    die("Access denied.");
+}
+
+$result = mysqli_query($conn, "SELECT * FROM products");
+?>
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="/jewellery_store/assets/style.css">
+    <title>Manage Products</title>
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
-<body style="margin:0;min-height:100vh; display:flex; flex-direction:column;">
-<div style="flex:1;">
-<div class="admin-container">
-    <h1>Admin Dashboard</h1>
-    <p class="admin-subtitle">Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
+<body>
 
-    <div class="admin-grid">
+<div class="admin-table-container">
+    <h2>Manage Products</h2>
 
-        <a href="add_product.php" class="admin-card">
-            <h3>➕ Add Product</h3>
-            <p>Add new jewellery items</p>
-        </a>
+    <table class="admin-table">
+        <tr>
+            <th>ID</th>
+            <th>Image</th>
+            <th>Name</th>
+            <th>Gender</th>
+            <th>Category</th>
+            <th>Type</th>
+            <th>Price</th>
+            <th>Action</th>
+        </tr>
 
-        <a href="manage_products.php" class="admin-card">
-            <h3>📦 Manage Products</h3>
-            <p>Edit or delete products</p>
-        </a>
+        <?php while ($row = mysqli_fetch_assoc($result)) { ?>
+        <tr>
+            <td><?php echo $row['id']; ?></td>
 
-        <a href="orders.php" class="admin-card">
-            <h3>🧾 Manage Orders</h3>
-            <p>View and update orders</p>
-        </a>
+            <td>
+                <img src="../assets/images/<?php echo htmlspecialchars($row['image']); ?>" 
+                     class="admin-product-img" 
+                     alt="product">
+            </td>
 
-        <a href="../index.php" class="admin-card admin-center">
-            <h3>🌐 Go to Website</h3>
-            <p>TARA</p>
-        </a>
+            <td><?php echo htmlspecialchars($row['name']); ?></td>
+            <td><?php echo htmlspecialchars($row['gender']); ?></td>
+            <td><?php echo htmlspecialchars($row['category']); ?></td>
+            <td><?php echo htmlspecialchars($row['type']); ?></td>
+            <td>€<?php echo htmlspecialchars($row['price']); ?></td>
+            <td>
+                <a href="delete_product.php?id=<?php echo $row['id']; ?>" class="delete-btn">Delete</a>
+            </td>
+        </tr>
+        <?php } ?>
 
-        <a href="logout.php" class="admin-card admin-center logout-card">
-            <h3>🚪 Logout</h3>
-            <p>Sign out of your account</p>
-        </a>
-        <a href="add_admin.php" class="admin-card">
-           <h3>➕Add New Admin</h3>
-           <p>Create another admin account</p>
-        </a>
+    </table>
 
-
-
-    </div>
- </div>
+    <p style="text-align:center; margin-top:20px;">
+        <a href="index.php">⬅ Back to Dashboard</a>
+    </p>
 </div>
+
 <!-- FOOTER -->
-<footer class="site-footer" style="margin-top:auto;">
+<footer class="site-footer">
     <div class="footer-container">
 
         <!-- CONTACT -->
@@ -112,7 +117,6 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         <p>© <?php echo date("Y"); ?> 𝕋𝔸ℝ𝔸 𝕁𝔼𝕎𝔼𝕃𝕃𝔼ℝ𝕊. All rights reserved.</p>
     </div>
 </footer>
-
 
 </body>
 </html>

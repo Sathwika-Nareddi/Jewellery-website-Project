@@ -1,59 +1,93 @@
 <?php
 session_start();
-if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
-    header("Location: ../auth/login.php");
-    exit();
+include("../config/db.php");
+
+if (!isset($_SESSION['role']) || $_SESSION['role'] !== 'admin') {
+    die("Access denied. Admins only.");
+}
+
+
+if (isset($_POST['add_product'])) {
+
+    $name = $_POST['name'];
+    $gender = $_POST['gender'];
+    $category = $_POST['category'];
+    $type = $_POST['type'];
+    $price = $_POST['price'];
+    $description = $_POST['description'];
+
+    $image = $_FILES['image']['name'];
+    $tmp = $_FILES['image']['tmp_name'];
+
+    move_uploaded_file($tmp, "../assets/images/" . $image);
+
+    $query = "INSERT INTO products 
+    (name, gender, category, type, price, description, image)
+    VALUES 
+    ('$name', '$gender', '$category', '$type', '$price', '$description', '$image')";
+
+    if (mysqli_query($conn, $query)) {
+        echo "Product added successfully!";
+    } else {
+        echo "Error: " . mysqli_error($conn);
+    }
 }
 ?>
 
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="/jewellery_store/assets/style.css">
+    <title>Add Jewellery Product</title>
+    <link rel="stylesheet" href="../assets/style.css">
 </head>
 <body style="margin:0;min-height:100vh; display:flex; flex-direction:column;">
 <div style="flex:1;">
-<div class="admin-container">
-    <h1>Admin Dashboard</h1>
-    <p class="admin-subtitle">Welcome, <?php echo htmlspecialchars($_SESSION['user_name']); ?></p>
+ <div class="admin-form-container">
+    <h2>Add Jewellery Product</h2>
 
-    <div class="admin-grid">
+    <form method="POST" enctype="multipart/form-data">
 
-        <a href="add_product.php" class="admin-card">
-            <h3>➕ Add Product</h3>
-            <p>Add new jewellery items</p>
-        </a>
+        <input type="text" name="name" placeholder="Product Name" required>
 
-        <a href="manage_products.php" class="admin-card">
-            <h3>📦 Manage Products</h3>
-            <p>Edit or delete products</p>
-        </a>
+        <!-- Gender -->
+        <select name="gender" required>
+            <option value="">Select Gender</option>
+            <option value="Men">Men</option>
+            <option value="Women">Women</option>
+        </select>
 
-        <a href="orders.php" class="admin-card">
-            <h3>🧾 Manage Orders</h3>
-            <p>View and update orders</p>
-        </a>
+        <!-- Category -->
+        <select name="category" required>
+            <option value="">Select Category</option>
+            <option value="Rings">Rings</option>
+            <option value="Pendants">Pendants</option>
+            <option value="Bracelets">Bracelets</option>
+            <option value="Earrings">Earrings</option>
+            <option value="Anklets">Anklets</option>
+            <option value="Bangles">Bangles</option>
+        </select>
 
-        <a href="../index.php" class="admin-card admin-center">
-            <h3>🌐 Go to Website</h3>
-            <p>TARA</p>
-        </a>
+        <!-- Material -->
+        <select name="type" required>
+            <option value="">Select Material</option>
+            <option value="Gold">Gold</option>
+            <option value="Silver">Silver</option>
+            <option value="Diamond">Diamond</option>
+        </select>
 
-        <a href="logout.php" class="admin-card admin-center logout-card">
-            <h3>🚪 Logout</h3>
-            <p>Sign out of your account</p>
-        </a>
-        <a href="add_admin.php" class="admin-card">
-           <h3>➕Add New Admin</h3>
-           <p>Create another admin account</p>
-        </a>
+        <input type="number" name="price" placeholder="Price" required>
 
+        <textarea name="description" placeholder="Add Product Description"></textarea>
 
+        <input type="file" name="image" required>
 
-    </div>
+        <button type="submit" name="add_product">Add Product</button>
+
+    </form>
  </div>
 </div>
+
+
 <!-- FOOTER -->
 <footer class="site-footer" style="margin-top:auto;">
     <div class="footer-container">
@@ -112,6 +146,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
         <p>© <?php echo date("Y"); ?> 𝕋𝔸ℝ𝔸 𝕁𝔼𝕎𝔼𝕃𝕃𝔼ℝ𝕊. All rights reserved.</p>
     </div>
 </footer>
+
 
 
 </body>
